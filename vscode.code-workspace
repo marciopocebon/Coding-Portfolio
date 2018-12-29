@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "Machine Learning in Python and Scikit-Learn"
+		},
+		{
+			"path": "MNIST - Julia"
+		},
+		{
+			"path": "MNIST - Python"
+		},
+		{
+			"path": "Deep Learning MNIST with Keras"
+		},
+		{
+			"path": "Deep Learning Sonar with TensorFlow"
+		}
+	],
+	"settings": {}
+}
