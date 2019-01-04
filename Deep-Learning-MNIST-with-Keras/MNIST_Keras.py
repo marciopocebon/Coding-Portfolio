@@ -38,7 +38,8 @@ model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accur
 
 dg = ImageDataGenerator(rotation_range=ROTATION_RANGE, width_shift_range=SHIFT_RANGE, height_shift_range=SHIFT_RANGE)
 dg.fit(X_train)    
-model.fit_generator(dg.flow(X_train, Y_train, batch_size=BATCH_SIZE), samples_per_epoch=len(X_train), nb_epoch=EPOCHS, validation_data=(X_test,Y_test))
+model.fit_generator(dg.flow(X_train, Y_train, batch_size=BATCH_SIZE), samples_per_epoch=len(X_train), 
+                    nb_epoch=EPOCHS, validation_data=(X_test,Y_test))
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 print('Accuracy:', score[1])

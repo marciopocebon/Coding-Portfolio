@@ -2,7 +2,7 @@
 # Sonar Mines vs Rocks
 # https://www.youtube.com/watch?v=yX8KuPZCAMo
 # With small corrections and additions of missing parts by Claude COULOMBE - PhD candidate TÉLUQ / UQAM - Montréal
-# Final modifications by @Developer Thomas
+# Many errors - more modifications by @Developer Thomas M. Cherickal
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -23,7 +23,7 @@ def read_dataset():
     X = df[df.columns[0:60]].values
     y = df[df.columns[60]]
     
-    # Encode the dependant variable
+    # Encode the dependent variable
     encoder = LabelEncoder()
     encoder.fit(y)
     y = encoder.transform(y)
@@ -43,10 +43,10 @@ def one_hot_encode(labels):
 X, Y = read_dataset()
 
 # Shuffle the dataset to mix up the rows
-X, Y = shuffle(X, Y, random_state=1)
+X, Y = shuffle(X, Y)
 
 # Convert the dataset into train and test datasets
-train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.20, random_state=415)
+train_x, test_x, train_y, test_y = train_test_split(X, Y, test_size=0.20)
 
 # Inspect the shape of the train and test datasets
 print("train_x.shape",train_x.shape)
@@ -55,8 +55,8 @@ print("test_x.shape",test_x.shape)
 print("test_y.shape",test_y.shape)
 
 # Define the hyperparameters
-learning_rate = 0.3
-training_epochs = 250
+learning_rate = 0.1
+training_epochs = 80
 cost_history = np.empty(shape=[1], dtype=float)
 # Number of features <=> number of columns
 n_dim = X.shape[1] 
@@ -64,12 +64,12 @@ print("n_dim",n_dim)
 n_class = 2
 model_path = "C:\\Users\\ADMIN\\OneDrive\\My Projects\\Coding-Portfolio\\Deep Learning Sonar with TensorFlow\\model"
 
-# Define the number of hidden layers an the
+# Define the number of hidden layers and the
 # number of neurons for each layer
-n_hidden_1 = 60
-n_hidden_2 = 60
-n_hidden_3 = 60
-n_hidden_4 = 60
+n_hidden_1 = 120
+n_hidden_2 = 120
+n_hidden_3 = 120
+n_hidden_4 = 120
 
 # Inputs and outputs
 x = tf.placeholder(tf.float32,[None, n_dim])
@@ -90,9 +90,9 @@ def multilayer_perceptron(x, weights, biases):
     # Hidden layer with sigmoid activations
     layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
     layer_3 = tf.nn.sigmoid(layer_3)
-    # Hidden layer with RELU activations
+    # Hidden layer with sigmoid activations
     layer_4 = tf.add(tf.matmul(layer_3, weights['h4']), biases['b4'])
-    layer_4 = tf.nn.relu(layer_4)
+    layer_4 = tf.nn.sigmoid(layer_4)
     # Output layer with linear activations
     out_layer = tf.matmul(layer_4, weights['out']) + biases['out']
     return out_layer
@@ -129,40 +129,29 @@ training_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost_f
 sess = tf.Session()
 sess.run(init)
 
-mse_history = []
-accuracy_history = []
+
 
 # Calculate the cost and the accuracy for each epoch
 for epoch in range(training_epochs):
     sess.run(training_step, feed_dict={x:train_x, y_:train_y})
     cost = sess.run(cost_function,feed_dict={x:train_x, y_:train_y})
-    cost_history = np.append(cost_history, cost)
+    
+    pred_y = sess.run(y,feed_dict={x:train_x} )
     correct_prediction = tf.equal(tf.argmax(y,1),tf.argmax(y_,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-#     print("Accuracy: ", (sess.run(accuracy, feed_dict={x:test_x, y_:test_y})))
+    train_accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    print("Train Accuracy: ", (sess.run(train_accuracy, feed_dict={x:train_x, y_:train_y})))
     pred_y = sess.run(y,feed_dict={x:test_x} )
+    correct_prediction = tf.equal(tf.argmax(y,1),tf.argmax(y_,1))
+    test_accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    
+    print("Test Accuracy: ", (sess.run(test_accuracy, feed_dict={x:test_x, y_:test_y})))
     mse = tf.reduce_mean(tf.square(pred_y - test_y))
     mse_ = sess.run(mse)
-    accuracy = (sess.run(accuracy,feed_dict={x:train_x, y_:train_y}))
-    accuracy_history.append(accuracy)
-    print('epoch: ', epoch,' - ', 'cost: ', cost, " - MSE: ", mse_, "- Train Accuracy: ", accuracy)
+    print('epoch: ', epoch,' - ', 'cost: ', cost, " - MSE: ", mse_)
     
 save_path = saver.save(sess, model_path)
 print("Model saved in file: %s", save_path)
-
-plt.plot(accuracy_history)
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.show()
-plt.plot(range(len(cost_history)),cost_history)
-plt.axis([0,training_epochs,0,np.max(cost_history)/100])
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.show()
-# Print the final mean square error
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-accuracy = tf.reduce_mean(tf.square(pred_y - test_y))
-print("Test Accuracy: ", (sess.run(y, feed_dict={x:test_x, y_:test_y} )))
 
 # Print the final mean square error
 pred_y = sess.run(y, feed_dict={x:test_x})
